@@ -40,4 +40,5 @@ spring.datasource.password=tu_clave
 Carlos Eduardo Cárdenas Altuna – 2025
 
 👉 [Descargar informe en Word]
-https://github.com/Ceca25/SistemaIntegraldegestiondeEventos/blob/main/SistemaIntegraldegestiondeEventos.docx
+https://github.com/Ceca25/SistemaIntegraldegestiondeEventos/raw/refs/heads/main/documentacion/SistemaIntegraldegestiondeEventos.docx
+
