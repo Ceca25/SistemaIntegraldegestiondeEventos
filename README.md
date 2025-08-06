@@ -22,3 +22,19 @@ Este sistema permite gestionar de manera integral los eventos, alquiler de menaj
 1. Clona el repositorio:
    ```bash
    git clone https://github.com/Ceca25/SistemaIntegraldegestiondeEventos.git
+
+2. Importa el proyecto en tu IDE IntelliJ.
+
+Crea la base de datos eventsys_lb en MySQL.
+
+Configura application.properties con tus credenciales:
+
+properties
+Copiar
+Editar
+spring.datasource.url=jdbc:mysql://localhost:3306/eventsys_lb
+spring.datasource.username=root
+spring.datasource.password=tu_clave
+
+👨‍💻 Autor
+Carlos Eduardo Cárdenas Altuna – 2025
