@@ -39,9 +39,6 @@ CREATE TABLE empleados (
 	FOREIGN KEY (id_estado_civil) REFERENCES estado_civil(id_estado_civil) ON DELETE RESTRICT
 );
 
-SELECT * FROM empleados;
-TRUNCATE TABLE empleados;
-ALTER TABLE empleados AUTO_INCREMENT = 1;
 
 CREATE TABLE genero (
     id_genero INT AUTO_INCREMENT PRIMARY KEY,
@@ -115,32 +112,39 @@ CREATE TABLE cargos (
 	usuario_actualizacion VARCHAR(50) NOT NULL,
 	FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON DELETE SET NULL
 );
+
+SELECT * FROM empleados;
+TRUNCATE TABLE empleados;
+ALTER TABLE empleados AUTO_INCREMENT = 1;
    
 -- Tabla de roles
 CREATE TABLE roles (
     id_rol INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     descripcion TEXT,
-    activo BOOLEAN DEFAULT TRUE,
+    id_estado INT DEFAULT 1,
     -- Campos de auditoría
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usuario_creacion VARCHAR(50) NOT NULL,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    usuario_actualizacion VARCHAR(50) NOT NULL
+    usuario_actualizacion VARCHAR(50) NOT NULL,
+    FOREIGN KEY (id_estado) REFERENCES estado(id_estado) ON DELETE SET NULL
 );
+
     
 -- Tabla de permisos
 CREATE TABLE permisos (
     id_permiso INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
 	id_rol INT NOT NULL,
-    activo BOOLEAN DEFAULT TRUE,
+    id_estado INT DEFAULT 1,
     -- Campos de auditoria
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	usuario_creacion VARCHAR(50) NOT NULL,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     usuario_actualizacion VARCHAR(50) NOT NULL,
     -- Relaciones
+    FOREIGN KEY (id_estado) REFERENCES estado(id_estado) ON DELETE SET NULL,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
 	FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON DELETE CASCADE,
     UNIQUE KEY unique_usuario_rol (id_usuario, id_rol)
@@ -161,7 +165,7 @@ CREATE TABLE usuarios (
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    esta_activo BOOLEAN DEFAULT TRUE,
+    id_estado INT DEFAULT 1,
     id_rol INT NOT NULL,
     id_empleado INT NOT NULL,
     ultimo_acceso TIMESTAMP NULL,
@@ -172,6 +176,7 @@ CREATE TABLE usuarios (
     usuario_actualizacion VARCHAR(50) NOT NULL,
     -- Relaciones
     FOREIGN KEY (id_rol) REFERENCES roles(id_rol),
+    FOREIGN KEY (id_estado) REFERENCES estado(id_estado) ON DELETE SET NULL,
     FOREIGN KEY (id_empleado) REFERENCES empleados(id_empleado)
 );
 
@@ -195,30 +200,107 @@ CREATE TABLE bitacora_actividad (
 
 -- Tabla de Categoria_productos
 CREATE TABLE categorias_producto (
-    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
-    nombre_categoria VARCHAR(100) NOT NULL,
-	-- Campos de auditoria
+   id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+   cogigo_categorias VARCHAR(10) UNIQUE NOT NULL,
+   nombre_categoria VARCHAR(100) NOT NULL,
+ 	-- Campos de auditoria
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	usuario_creacion VARCHAR(50) NOT NULL,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     usuario_actualizacion VARCHAR(50) NOT NULL
 );
 
--- Tabla de productos
-CREATE TABLE productos (
-    id_producto INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100),
+
+
+CREATE TABLE subcategorias_producto (
+    id_subcategoria INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_subcategoria VARCHAR(10) UNIQUE NOT NULL,
+    nombre_subcategoria VARCHAR(100) NOT NULL,
     descripcion TEXT,
-    stock_actual INT,
-    precio_unitario DECIMAL(10,2),
-    id_categoria INT,
+    id_categoria INT NOT NULL,
+    -- Campos de auditoria
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL,
+    FOREIGN KEY (id_categoria) REFERENCES categorias_producto(id_categoria)
+);
+
+-- Tabla de productos
+
+
+CREATE TABLE productos (
+    id_producto INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    codigo_producto VARCHAR(20) NOT NULL UNIQUE,
+    nombre_producto VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    url_imagen VARCHAR(255),
+    unidad_medida VARCHAR(20) NOT NULL DEFAULT 'unidad',
+    stock_actual INT UNSIGNED NOT NULL DEFAULT 0 CHECK (stock_actual >= 0),
+    id_estado INT UNSIGNED NOT NULL,  -- Estado del producto
+    id_marca INT UNSIGNED NOT NULL,
+    id_proveedor INT UNSIGNED NOT NULL,
+    id_categoria INT UNSIGNED NOT NULL,
+    id_subcategoria INT UNSIGNED,
+	  -- Campos de auditoria
+    fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL,
+    FOREIGN KEY (id_estado) REFERENCES estado(id_estado),
+    FOREIGN KEY (id_marca) REFERENCES marcas(id_marca),
+    FOREIGN KEY (id_proveedor) REFERENCES proveedores(id_proveedor),
+    FOREIGN KEY (id_categoria) REFERENCES categorias_producto(id_categoria),
+    FOREIGN KEY (id_subcategoria) REFERENCES subcategorias_producto(id_subcategoria)
+);
+
+-- 3️⃣ Relaciones desde otras tablas hacia productos
+
+-- detalle_compras
+ALTER TABLE detalle_compras
+ADD CONSTRAINT fk_detalle_compras_producto
+FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
+
+-- detalle_cotizacion
+ALTER TABLE detalle_cotizacion
+ADD CONSTRAINT fk_detalle_cotizacion_producto
+FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
+
+-- precios_alquiler
+ALTER TABLE precios_alquiler
+ADD CONSTRAINT fk_precios_alquiler_producto
+FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
+
+-- detalle_factura
+ALTER TABLE detalle_factura
+ADD CONSTRAINT fk_detalle_factura_producto
+FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
+
+-- control_retorno
+ALTER TABLE control_retorno
+ADD CONSTRAINT fk_control_retorno_producto
+FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
+
+-- productos_perdidos
+ALTER TABLE productos_perdidos
+ADD CONSTRAINT fk_productos_perdidos_producto
+FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
+
+-- detalle_contrato
+ALTER TABLE detalle_contrato
+ADD CONSTRAINT fk_detalle_contrato_producto
+FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
+
+-- Tabla de marcas
+CREATE TABLE marcas (
+    id_marca INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombre_marca VARCHAR(100) NOT NULL UNIQUE,
+    pais_origen VARCHAR(50),
     -- Campos de auditoria
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	usuario_creacion VARCHAR(50) NOT NULL,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    usuario_actualizacion VARCHAR(50) NOT NULL,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-    FOREIGN KEY (id_categoria) REFERENCES categorias_producto(id_categoria)
+    usuario_actualizacion VARCHAR(50) NOT NULL
 );
 
 -- Tabla de proveedores
@@ -336,14 +418,16 @@ CREATE TABLE detalle_cotizacion (
     FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
 );
 
+
 -- Tabla de precios_alquiler
 CREATE TABLE precios_alquiler (
     id_precio INT AUTO_INCREMENT PRIMARY KEY,
     id_producto INT NOT NULL,
-    precio_unitario DECIMAL(10,2) NOT NULL,
+    tipo_precio ENUM('venta', 'alquiler', 'mayorista') NOT NULL,
+    precio_unitario DECIMAL(10,2) NOT NULL CHECK (precio_unitario >= 0),
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE DEFAULT NULL, -- Si es NULL, significa que está vigente
-    estado ENUM('vigente', 'inactivo') DEFAULT 'vigente',
+    id_estado INT NOT NULL,
 	-- Campos de auditoria
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	usuario_creacion VARCHAR(50) NOT NULL,
@@ -351,6 +435,9 @@ CREATE TABLE precios_alquiler (
     usuario_actualizacion VARCHAR(50) NOT NULL,
     FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
 );
+
+
+
 
 -- Tabla de contrato
 CREATE TABLE contratos (
@@ -497,7 +584,8 @@ VALUES
 ('Operaciones', 'Supervisa la producción y logística de eventos', 'admin', NOW(), 'admin', NOW()),
 ('Administrador', 'Tareas administrativas y gestión documental', 'admin', NOW(), 'admin', NOW()),
 ('Logística', 'Área responsable de transporte y distribución', 'admin', NOW(), 'admin', NOW()),
-('Almacén', 'Área de almacenamiento y control de inventario', 'admin', NOW(), 'admin', NOW());
+('Almacén', 'Área de almacenamiento y control de inventario', 'admin', NOW(), 'admin', NOW()),
+('Ventas', 'Gestiona la atención a clientes, genera cotizaciones y contratos, coordina los servicios para eventos, y supervisa las ventas.', 'admin', NOW(), 'admin', NOW());
 
 INSERT INTO tipo_documento (descripcion, usuario_creacion, usuario_actualizacion)
 VALUES
@@ -566,3 +654,134 @@ INSERT INTO empleados (
  1, NULL, 'admin', 'admin'
  );
  
+INSERT INTO roles (nombre, descripcion, id_estado, usuario_creacion, usuario_actualizacion)
+VALUES 
+('Administrador', 'Control total del sistema y configuración general', 1, 'admin', 'admin'),
+('Jefe de Operaciones', 'Supervisa cotizaciones, proveedores y reportes', 1, 'admin', 'admin'),
+('Almacenero', 'Gestiona entregas, devoluciones y control de stock', 1, 'admin', 'admin'),
+('Vendedor', 'Atiende clientes, genera cotizaciones y registra alquileres', 1, 'admin', 'admin');
+
+INSERT INTO usuarios (username, email, password_hash, id_rol, id_estado, id_empleado, usuario_creacion, usuario_actualizacion)
+VALUES
+('admin', 'cardenasa@leboulevard.ca.com', SHA2('admin123', 256), 1, 1, 1, 'admin', 'admin'),
+('joperaciones', 'monci.cv@leboulevard.ca.com', SHA2('operaciones123', 256), 2, 1, 2, 'admin', 'admin'),
+('almacenero', 'almacen@leboulevard.ca.com', SHA2('almacen123', 256), 3, 1, 3, 'admin', 'admin');
+
+
+INSERT INTO permisos (nombre_permiso, descripcion, id_estado, usuario_creacion, usuario_actualizacion)
+VALUES
+('cotizaciones_crear', 'Permite crear nuevas cotizaciones', 1, 'admin', 'admin'),
+('cotizaciones_ver', 'Permite ver cotizaciones y sus detalles', 1, 'admin', 'admin'),
+('cotizaciones_exportar', 'Permite exportar cotizaciones a PDF o enviar por WhatsApp', 1, 'admin', 'admin'),
+('inventario_ver', 'Permite ver y listar productos', 1, 'admin', 'admin'),
+('inventario_editar', 'Permite agregar o editar productos y stock', 1, 'admin', 'admin'),
+('facturacion_crear', 'Permite emitir facturas', 1, 'admin', 'admin'),
+('clientes_crear', 'Permite registrar nuevos clientes', 1, 'admin', 'admin'),
+('reservas_gestionar', 'Permite aprobar o cancelar reservas', 1, 'admin', 'admin'),
+('dashboard_ver', 'Permite ver el dashboard con KPIs y gráficos', 1, 'admin', 'admin'),
+('administracion_usuarios', 'Permite gestionar usuarios, roles y contraseñas', 1, 'admin', 'admin'),
+('sincronizar_datos', 'Permite usar la función de sincronización de datos', 1, 'admin', 'admin'),
+('cerrar_sesion', 'Permite cerrar sesión del sistema', 1, 'admin', 'admin');
+
+-- Asignar permisos a roles
+INSERT INTO roles_permisos (id_rol, id_permiso) VALUES
+-- Administrador (id_rol = 1) tiene todos los permisos
+(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12),
+
+-- Jefe de Operaciones (id_rol = 2) permisos relacionados a cotizaciones, reservas, reportes
+(2, 1), (2, 2), (2, 3), (2, 8), (2, 9),
+
+-- Almacenero (id_rol = 3) permisos de inventario
+(3, 4), (3, 5),
+
+-- Vendedor (id_rol = 4) permisos de clientes, cotizaciones, facturación
+(4, 1), (4, 2), (4, 6), (4, 7);
+
+INSERT INTO bitacora_actividad (
+    id_usuario,
+    fecha_ingreso,
+    fecha_salida,
+    duracion_minutos,
+    usuario_creacion,
+    usuario_actualizacion
+) VALUES
+(1, '2025-08-11 08:00:00', '2025-08-11 16:00:00', 480, 'admin', 'admin'),
+(2, '2025-08-11 09:00:00', '2025-08-11 14:00:00', 300, 'joperaciones', 'joperaciones'),
+(3, '2025-08-11 10:00:00', '2025-08-11 15:30:00', 330, 'almacenero', 'almacenero');
+
+INSERT INTO categorias_producto (
+    codigo_categoria,
+    nombre_categoria,
+    fecha_creacion,
+    usuario_creacion,
+    fecha_actualizacion,
+    usuario_actualizacion
+)
+VALUES
+('0100CR', 'Cristalería',              CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('0200MN', 'Menaje',                   CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('0300UB', 'Utensilios',               CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('0400DC', 'Decoración',               CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('0500VS', 'Vestuario',                CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('0600SV', 'Servicios',                CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('0700CT', 'Catering',                 CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin');
+
+
+-- Cristalería
+INSERT INTO subcategorias_producto (codigo_subcategoria, nombre_subcategoria, id_categoria, fecha_creacion, usuario_creacion, fecha_actualizacion, usuario_actualizacion)
+VALUES
+('CR01', 'Copas', 1, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('CR02', 'Vasos', 1, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('CR03', 'Jarras', 1, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('CR04', 'Hieleras', 1, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin');
+
+-- Menaje
+INSERT INTO subcategorias_producto (codigo_subcategoria, nombre_subcategoria, id_categoria, fecha_creacion, usuario_creacion, fecha_actualizacion, usuario_actualizacion)
+VALUES
+('MN01', 'Platos', 2, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('MN02', 'Cubiertos', 2, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('MN03', 'Servilletas', 2, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('MN04', 'Manteles', 2, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin');
+
+-- Utensilios 
+INSERT INTO subcategorias_producto (codigo_subcategoria, nombre_subcategoria, id_categoria, fecha_creacion, usuario_creacion, fecha_actualizacion, usuario_actualizacion)
+VALUES
+('UB01', 'Thermos', 3, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('UB02', 'Cafeteras eléctricas', 3, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('UB03', 'Dispensadores', 3, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('UB04', 'Cocteleras', 3, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin');
+
+-- Decoración
+INSERT INTO subcategorias_producto (codigo_subcategoria, nombre_subcategoria, id_categoria, fecha_creacion, usuario_creacion, fecha_actualizacion, usuario_actualizacion)
+VALUES
+('DC01', 'Candelabros', 4, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('DC02', 'Faroles', 4, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('DC03', 'Letreros', 4, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('DC04', 'Floreros', 4, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin');
+
+-- Vestuario
+INSERT INTO subcategorias_producto (codigo_subcategoria, nombre_subcategoria, id_categoria, fecha_creacion, usuario_creacion, fecha_actualizacion, usuario_actualizacion)
+VALUES
+('VS01', 'Camisas', 5, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('VS02', 'Chalecos', 5, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('VS03', 'Chaquetas', 5, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('VS04', 'Mandiles', 5, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin');
+
+-- Servicios
+INSERT INTO subcategorias_producto (codigo_subcategoria, nombre_subcategoria, id_categoria, fecha_creacion, usuario_creacion, fecha_actualizacion, usuario_actualizacion)
+VALUES
+('SV01', 'Mozos', 6, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('SV02', 'Bartender', 6, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('SV03', 'Cocina y ayudante', 6, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('SV04', 'Lavado', 6, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('SV05', 'Limpieza', 6, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('SV06', 'Vigilancia', 6, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin');
+
+-- Catering
+INSERT INTO subcategorias_producto VALUES
+('CT01', 'Pollada', 7, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('CT02', 'Parrilla', 7, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('CT03', 'Caja china', 7, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin'),
+('CT04', 'Buffet caliente/frío', 7, CURRENT_TIMESTAMP, 'admin', CURRENT_TIMESTAMP, 'admin');
+
+SELECT * FROM productos;

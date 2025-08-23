@@ -5,5 +5,5 @@ import pe.leboulevard.demo.domain.cargos.model.CargosModel;
 import java.util.Optional;
 
 public interface CargosService {
-    Optional<CargosModel> buscaCargos(Long id_cargo);
+    Optional<CargosModel> buscaCargos();
 }
