@@ -2,7 +2,7 @@ package pe.leboulevard.demo.presentation.cargos.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import pe.leboulevard.demo.domain.cargos.model.CargosModel;
+import pe.leboulevard.demo.domain.organizacion.cargos.model.CargosModel;
 import pe.leboulevard.demo.presentation.cargos.dto.CargosResponseDto;
 
 @Mapper(componentModel = "spring")

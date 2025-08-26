@@ -4,8 +4,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import pe.leboulevard.demo.domain.cargos.model.CargosModel;
-import pe.leboulevard.demo.domain.cargos.service.CargosService;
+import pe.leboulevard.demo.domain.organizacion.cargos.model.CargosModel;
+import pe.leboulevard.demo.domain.organizacion.cargos.service.CargosService;
 
 import java.util.Optional;
 

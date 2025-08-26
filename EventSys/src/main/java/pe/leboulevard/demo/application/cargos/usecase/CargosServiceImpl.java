@@ -2,11 +2,11 @@ package pe.leboulevard.demo.application.cargos.usecase;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import pe.leboulevard.demo.domain.cargos.model.CargosModel;
-import pe.leboulevard.demo.domain.cargos.repository.CargosRepository;
-import pe.leboulevard.demo.domain.cargos.service.CargosService;
+import pe.leboulevard.demo.domain.organizacion.cargos.model.CargosModel;
+import pe.leboulevard.demo.domain.organizacion.cargos.repository.CargosRepository;
+import pe.leboulevard.demo.domain.organizacion.cargos.service.CargosService;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -15,7 +15,7 @@ public class CargosServiceImpl implements CargosService {
     private final CargosRepository cargosRepository;
 
     @Override
-    public Optional<CargosModel> buscaCargos(Long id_cargo) {
-        return cargosRepository.buscarPorId(id_cargo);
+    public List<CargosModel> listarCargos() {
+        return List.of();
     }
 }

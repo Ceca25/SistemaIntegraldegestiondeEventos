@@ -1,6 +1,156 @@
-CREATE DATABASE IF NOT EXISTS eventsys_lb;
+-- Crear la base de datos
+DROP DATABASE IF EXISTS eventsys_lb;
+CREATE DATABASE eventsys_lb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE eventsys_lb;
 
+-- ============================
+-- TABLAS MAESTRAS
+-- ============================
+
+-- Tabla de tipos de documento
+CREATE TABLE tipo_documento (
+    id_tipo_documento INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+         -- Campos de auditoria
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL
+);
+
+-- Tabla de géneros
+CREATE TABLE genero (
+    id_genero INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+         -- Campos de auditoria
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL
+);
+
+-- Tabla de estado civil
+CREATE TABLE estado_civil (
+    id_estado_civil INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+         -- Campos de auditoria
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL
+);
+
+-- Tabla de estados generales (activo, inactivo, suspendido, etc.)
+CREATE TABLE estado (
+    id_estado INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+         -- Campos de auditoria
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL
+);
+
+-- Tabla de departamentos
+CREATE TABLE departamentos (
+    id_departamento INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    descripcion TEXT,
+         -- Campos de auditoria
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL
+);
+
+-- Tabla de cargos
+CREATE TABLE cargos (
+    id_cargo INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    descripcion TEXT,
+         -- Campos de auditoria
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL,
+    id_departamento INT NOT NULL,
+    FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON DELETE CASCADE
+);
+
+
+-- ============================
+-- USUARIOS Y SEGURIDAD
+-- ============================
+
+-- Tabla de usuarios
+CREATE TABLE usuarios (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    id_estado INT NOT NULL,
+     -- Campos de auditoria
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL,
+     -- Relacion
+     FOREIGN KEY (id_estado) REFERENCES estado(id_estado)
+);
+
+-- Tabla de roles
+CREATE TABLE roles (
+    id_rol INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT,
+     -- Campos de auditoria
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL
+);
+
+-- Tabla de permisos
+CREATE TABLE permisos (
+    id_permiso INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    descripcion TEXT,
+     -- Campos de auditoria
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL
+);
+
+-- Relación N:M roles - permisos
+CREATE TABLE roles_permisos (
+    id_rol INT,
+    id_permiso INT,
+	-- Campos de auditoria
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL,
+    PRIMARY KEY (id_rol, id_permiso),
+    FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON DELETE CASCADE,
+    FOREIGN KEY (id_permiso) REFERENCES permisos(id_permiso) ON DELETE CASCADE
+);
+
+-- Relación N:M entre usuarios y roles
+CREATE TABLE usuario_roles (
+    id_usuario INT,
+    id_rol INT,
+     -- Auditoría
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_creacion VARCHAR(50) NOT NULL,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    usuario_actualizacion VARCHAR(50) NOT NULL,
+    PRIMARY KEY (id_usuario, id_rol),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON DELETE CASCADE
+);
  
 -- Tabla de empleados
 CREATE TABLE empleados (
@@ -31,177 +181,27 @@ CREATE TABLE empleados (
 	usuario_actualizacion VARCHAR(50) NOT NULL,
     -- Relaciones
 	FOREIGN KEY (id_cargo) REFERENCES cargos(id_cargo) ON DELETE SET NULL,
-	FOREIGN KEY (id_estado) REFERENCES estado(id_estado)ON DELETE SET NULL,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)ON DELETE SET NULL,
+    FOREIGN KEY (id_estado) REFERENCES estado(id_estado) ON DELETE SET NULL,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE SET NULL,
     FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON DELETE SET NULL,
-	FOREIGN KEY (id_tipo_documento) REFERENCES tipo_documento(id_tipo_documento) ON DELETE SET NULL,
+    FOREIGN KEY (id_tipo_documento) REFERENCES tipo_documento(id_tipo_documento) ON DELETE SET NULL,
     FOREIGN KEY (id_genero) REFERENCES genero(id_genero) ON DELETE RESTRICT,
-	FOREIGN KEY (id_estado_civil) REFERENCES estado_civil(id_estado_civil) ON DELETE RESTRICT
+    FOREIGN KEY (id_estado_civil) REFERENCES estado_civil(id_estado_civil) ON DELETE RESTRICT
 );
 
 
-CREATE TABLE genero (
-    id_genero INT AUTO_INCREMENT PRIMARY KEY,
-    descripcion VARCHAR(50) NOT NULL,
-    -- Campos de auditoría
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    usuario_creacion VARCHAR(50) NOT NULL,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    usuario_actualizacion VARCHAR(50) NOT NULL
-);
-
--- Tabla estado_civil
-CREATE TABLE estado_civil (
-    id_estado_civil INT AUTO_INCREMENT PRIMARY KEY,
-    descripcion VARCHAR(50) NOT NULL,
-    -- Campos de auditoría
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    usuario_creacion VARCHAR(50) NOT NULL,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    usuario_actualizacion VARCHAR(50) NOT NULL
-);
-
--- Tabla estado
-CREATE TABLE estado (
-    id_estado INT AUTO_INCREMENT PRIMARY KEY,
-    descripcion VARCHAR(50) NOT NULL UNIQUE,
-    -- Campos de auditoría
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    usuario_creacion VARCHAR(50) NOT NULL,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    usuario_actualizacion VARCHAR(50) NOT NULL
-);
 
 
--- Tabla de tipo_documento
-CREATE TABLE tipo_documento (
-    id_tipo_documento INT AUTO_INCREMENT PRIMARY KEY,
-    descripcion VARCHAR(50) NOT NULL,
-    -- Campos de auditoria
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	usuario_creacion VARCHAR(50) NOT NULL,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    usuario_actualizacion VARCHAR(50) NOT NULL
-);
 
 
--- Tabla de departamentos
-CREATE TABLE departamentos (
-	id_departamento INT AUTO_INCREMENT PRIMARY KEY,
-	nombre VARCHAR(100) NOT NULL,
-	descripcion TEXT,
-	activo BOOLEAN DEFAULT TRUE,
-    -- Campos de auditoría
-	fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	usuario_creacion VARCHAR(50) NOT NULL,
-	fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	usuario_actualizacion VARCHAR(50) NOT NULL
-);
-
--- Tabla de cargos
-CREATE TABLE cargos (
-	id_cargo INT AUTO_INCREMENT PRIMARY KEY,
-	nombre VARCHAR(100) NOT NULL,
-	descripcion TEXT,
-	id_departamento INT NULL,
-	activo BOOLEAN DEFAULT TRUE,
-    -- Campos de auditoría
-	fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	usuario_creacion VARCHAR(50) NOT NULL,
-	fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-	usuario_actualizacion VARCHAR(50) NOT NULL,
-	FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON DELETE SET NULL
-);
-
-SELECT * FROM empleados;
-TRUNCATE TABLE empleados;
-ALTER TABLE empleados AUTO_INCREMENT = 1;
-   
--- Tabla de roles
-CREATE TABLE roles (
-    id_rol INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    descripcion TEXT,
-    id_estado INT DEFAULT 1,
-    -- Campos de auditoría
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    usuario_creacion VARCHAR(50) NOT NULL,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    usuario_actualizacion VARCHAR(50) NOT NULL,
-    FOREIGN KEY (id_estado) REFERENCES estado(id_estado) ON DELETE SET NULL
-);
-
-    
--- Tabla de permisos
-CREATE TABLE permisos (
-    id_permiso INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
-	id_rol INT NOT NULL,
-    id_estado INT DEFAULT 1,
-    -- Campos de auditoria
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	usuario_creacion VARCHAR(50) NOT NULL,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    usuario_actualizacion VARCHAR(50) NOT NULL,
-    -- Relaciones
-    FOREIGN KEY (id_estado) REFERENCES estado(id_estado) ON DELETE SET NULL,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-	FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON DELETE CASCADE,
-    UNIQUE KEY unique_usuario_rol (id_usuario, id_rol)
-);
-
--- Tabla intermedia: roles_permisos
-CREATE TABLE roles_permisos (
-    id_rol INT NOT NULL,
-    id_permiso INT NOT NULL,
-    PRIMARY KEY (id_rol, id_permiso),
-    FOREIGN KEY (id_rol) REFERENCES roles(id_rol) ON DELETE CASCADE,
-    FOREIGN KEY (id_permiso) REFERENCES permisos(id_permiso) ON DELETE CASCADE
-);
-    
--- Tabla de usuarios
-CREATE TABLE usuarios (
-    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    id_estado INT DEFAULT 1,
-    id_rol INT NOT NULL,
-    id_empleado INT NOT NULL,
-    ultimo_acceso TIMESTAMP NULL,
-    -- Campos de auditoria
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	usuario_creacion VARCHAR(50) NOT NULL,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    usuario_actualizacion VARCHAR(50) NOT NULL,
-    -- Relaciones
-    FOREIGN KEY (id_rol) REFERENCES roles(id_rol),
-    FOREIGN KEY (id_estado) REFERENCES estado(id_estado) ON DELETE SET NULL,
-    FOREIGN KEY (id_empleado) REFERENCES empleados(id_empleado)
-);
 
 
--- Tabla de bitácora o log de actividad
-CREATE TABLE bitacora_actividad (
-   id_log INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT,
-    fecha_ingreso DATETIME,
-    fecha_salida DATETIME,
-    duracion_minutos INT,
-    fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
-    -- Campos de auditoria
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	usuario_creacion VARCHAR(50) NOT NULL,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    usuario_actualizacion VARCHAR(50) NOT NULL,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
-);
 
 
 -- Tabla de Categoria_productos
 CREATE TABLE categorias_producto (
    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
-   cogigo_categorias VARCHAR(10) UNIQUE NOT NULL,
+   codigo_categorias VARCHAR(10) UNIQUE NOT NULL,
    nombre_categoria VARCHAR(100) NOT NULL,
  	-- Campos de auditoria
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -237,11 +237,11 @@ CREATE TABLE productos (
     url_imagen VARCHAR(255),
     unidad_medida VARCHAR(20) NOT NULL DEFAULT 'unidad',
     stock_actual INT UNSIGNED NOT NULL DEFAULT 0 CHECK (stock_actual >= 0),
-    id_estado INT UNSIGNED NOT NULL,  -- Estado del producto
+    id_estado INT NOT NULL,  -- Estado del producto
     id_marca INT UNSIGNED NOT NULL,
-    id_proveedor INT UNSIGNED NOT NULL,
-    id_categoria INT UNSIGNED NOT NULL,
-    id_subcategoria INT UNSIGNED,
+    id_proveedor INT NOT NULL,
+    id_categoria INT NOT NULL,
+    id_subcategoria INT NOT NULL,
 	  -- Campos de auditoria
     fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     usuario_creacion VARCHAR(50) NOT NULL,
@@ -254,42 +254,6 @@ CREATE TABLE productos (
     FOREIGN KEY (id_subcategoria) REFERENCES subcategorias_producto(id_subcategoria)
 );
 
--- 3️⃣ Relaciones desde otras tablas hacia productos
-
--- detalle_compras
-ALTER TABLE detalle_compras
-ADD CONSTRAINT fk_detalle_compras_producto
-FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
-
--- detalle_cotizacion
-ALTER TABLE detalle_cotizacion
-ADD CONSTRAINT fk_detalle_cotizacion_producto
-FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
-
--- precios_alquiler
-ALTER TABLE precios_alquiler
-ADD CONSTRAINT fk_precios_alquiler_producto
-FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
-
--- detalle_factura
-ALTER TABLE detalle_factura
-ADD CONSTRAINT fk_detalle_factura_producto
-FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
-
--- control_retorno
-ALTER TABLE control_retorno
-ADD CONSTRAINT fk_control_retorno_producto
-FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
-
--- productos_perdidos
-ALTER TABLE productos_perdidos
-ADD CONSTRAINT fk_productos_perdidos_producto
-FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
-
--- detalle_contrato
-ALTER TABLE detalle_contrato
-ADD CONSTRAINT fk_detalle_contrato_producto
-FOREIGN KEY (id_producto) REFERENCES productos(id_producto);
 
 -- Tabla de marcas
 CREATE TABLE marcas (
@@ -560,6 +524,49 @@ CREATE TABLE pagos (
 );
 
 --
+INSERT INTO tipo_documento (nombre, usuario_creacion, usuario_actualizacion)
+VALUES
+('DNI', 'admin', 'admin'),
+('Carnet de Extranjeria', 'admin', 'admin'),
+('Pasaporte', 'admin', 'admin'),
+('RUC', 'admin', 'admin'),
+('Conviviente', 'admin', 'admin');
+
+
+INSERT INTO genero (nombre, usuario_creacion, usuario_actualizacion)
+VALUES
+('Masculino', 'admin', 'admin'),
+('Femenino', 'admin', 'admin');
+
+
+INSERT INTO estado_civil (nombre, usuario_creacion, usuario_actualizacion)
+VALUES
+('Soltero(a)', 'admin', 'admin'),
+('Casado(a)', 'admin', 'admin'),
+('Divorciado(a)', 'admin', 'admin'),
+('Viudo(a)', 'admin', 'admin'),
+('Conviviente', 'admin', 'admin');
+
+
+INSERT INTO estado (nombre, usuario_creacion, usuario_actualizacion)
+VALUES
+('Activo', 'admin', 'admin'),
+('Inactivo', 'admin', 'admin'),
+('Suspendido', 'admin', 'admin'),
+('Terminado', 'admin', 'admin');
+
+
+INSERT INTO departamentos (nombre, descripcion, usuario_creacion, fecha_creacion, usuario_actualizacion, fecha_actualizacion)
+VALUES
+('Servicio', 'Área que atiende en eventos: mozos, barman, vigilancia y limpieza', 'admin', NOW(), 'admin', NOW()),
+('Operaciones', 'Supervisa la producción y logística de eventos', 'admin', NOW(), 'admin', NOW()),
+('Administrador', 'Tareas administrativas y gestión documental', 'admin', NOW(), 'admin', NOW()),
+('Logística', 'Área responsable de transporte y distribución', 'admin', NOW(), 'admin', NOW()),
+('Almacén', 'Área de almacenamiento y control de inventario', 'admin', NOW(), 'admin', NOW()),
+('Ventas', 'Gestiona la atención a clientes, genera cotizaciones y contratos, coordina los servicios para eventos, y supervisa las ventas.', 'admin', NOW(), 'admin', NOW());
+
+
+
 INSERT INTO cargos (nombre, descripcion, id_departamento, usuario_creacion, usuario_actualizacion)
 VALUES
  -- Servicio (id_departamento = 1)
@@ -577,44 +584,68 @@ VALUES
 -- Almacén (id_departamento = 5)
  ('Almacenero', 'Controla el ingreso y salida de productos e insumos', 5, 'admin', 'admin');
  
- --
- INSERT INTO departamentos (nombre, descripcion, usuario_creacion, fecha_creacion, usuario_actualizacion, fecha_actualizacion)
+INSERT INTO usuarios (username, password_hash, nombres, apellidos, email,  id_estado,  usuario_creacion, usuario_actualizacion)
 VALUES
-('Servicio', 'Área que atiende en eventos: mozos, barman, vigilancia y limpieza', 'admin', NOW(), 'admin', NOW()),
-('Operaciones', 'Supervisa la producción y logística de eventos', 'admin', NOW(), 'admin', NOW()),
-('Administrador', 'Tareas administrativas y gestión documental', 'admin', NOW(), 'admin', NOW()),
-('Logística', 'Área responsable de transporte y distribución', 'admin', NOW(), 'admin', NOW()),
-('Almacén', 'Área de almacenamiento y control de inventario', 'admin', NOW(), 'admin', NOW()),
-('Ventas', 'Gestiona la atención a clientes, genera cotizaciones y contratos, coordina los servicios para eventos, y supervisa las ventas.', 'admin', NOW(), 'admin', NOW());
+('admin', SHA2('admin123', 256),'Carlos Eduardo', 'Cardenas Altuna','cardenasa@leboulevard.ca.com', 1,  'admin', 'admin'),
+('joperaciones', SHA2('operaciones123', 256), 'Monica Soledad', 'Cordova Vildez','monci.cv@leboulevard.ca.com', 1, 'admin', 'admin'),
+('almacenero', SHA2('almacen123', 256), 'Miriam', 'Altuna Ponce','almacen@leboulevard.ca.com', 1, 'admin', 'admin');
 
-INSERT INTO tipo_documento (descripcion, usuario_creacion, usuario_actualizacion)
-VALUES
-('DNI', 'admin', 'admin'),
-('Carnet de Extranjería', 'admin', 'admin'),
-('Pasaporte', 'admin', 'admin'),
-('RUC', 'admin', 'admin');
+INSERT INTO roles (nombre, descripcion, usuario_creacion, usuario_actualizacion)
+VALUES 
+('Administrador', 'Control total del sistema y configuración general', 'admin', 'admin'),
+('Jefe de Operaciones', 'Supervisa cotizaciones, proveedores y reportes','admin', 'admin'),
+('Almacenero', 'Gestiona entregas, devoluciones y control de stock','admin', 'admin'),
+('Vendedor', 'Atiende clientes, genera cotizaciones y registra alquileres', 'admin', 'admin');
 
 
--- Insertar datos iniciales
-INSERT INTO estado (descripcion, usuario_creacion, usuario_actualizacion)
+INSERT INTO permisos (nombre, descripcion, usuario_creacion, usuario_actualizacion)
 VALUES
-('Activo', 'admin', 'admin'),
-('Inactivo', 'admin', 'admin'),
-('Suspendido', 'admin', 'admin'),
-('Terminado', 'admin', 'admin');
+('cotizaciones_crear', 'Permite crear nuevas cotizaciones',  'admin', 'admin'),
+('cotizaciones_ver', 'Permite ver cotizaciones y sus detalles',  'admin', 'admin'),
+('cotizaciones_exportar', 'Permite exportar cotizaciones a PDF o enviar por WhatsApp',  'admin', 'admin'),
+('inventario_ver', 'Permite ver y listar productos', 'admin', 'admin'),
+('inventario_editar', 'Permite agregar o editar productos y stock',  'admin', 'admin'),
+('facturacion_crear', 'Permite emitir facturas',  'admin', 'admin'),
+('clientes_crear', 'Permite registrar nuevos clientes',  'admin', 'admin'),
+('reservas_gestionar', 'Permite aprobar o cancelar reservas',  'admin', 'admin'),
+('dashboard_ver', 'Permite ver el dashboard con KPIs y gráficos',  'admin', 'admin'),
+('administracion_usuarios', 'Permite gestionar usuarios, roles y contraseñas',  'admin', 'admin'),
+('sincronizar_datos', 'Permite usar la función de sincronización de datos', 'admin', 'admin'),
+('cerrar_sesion', 'Permite cerrar sesión del sistema',  'admin', 'admin');
 
-INSERT INTO genero (descripcion, usuario_creacion, usuario_actualizacion)
-VALUES
-('Masculino', 'admin', 'admin'),
-('Femenino', 'admin', 'admin');
 
-INSERT INTO estado_civil (descripcion, usuario_creacion, usuario_actualizacion)
-VALUES
-('Soltero(a)', 'admin', 'admin'),
-('Casado(a)', 'admin', 'admin'),
-('Divorciado(a)', 'admin', 'admin'),
-('Viudo(a)', 'admin', 'admin'),
-('Conviviente', 'admin', 'admin');
+-- Asignar permisos a roles
+INSERT INTO roles_permisos (id_rol, id_permiso,usuario_creacion, usuario_actualizacion) VALUES
+-- Administrador (id_rol = 1) tiene todos los permisos
+(1, 1,'admin', 'admin'), (1, 2,'admin', 'admin'), (1, 3,'admin', 'admin'), (1, 4,'admin', 'admin'), (1, 5,'admin', 'admin'), (1, 6,'admin', 'admin'), (1, 7,'admin', 'admin'), (1, 8,'admin', 'admin'), (1, 9,'admin', 'admin'), (1, 10,'admin', 'admin'), (1, 11,'admin', 'admin'), (1, 12,'admin', 'admin');
+
+
+INSERT INTO roles_permisos (id_rol, id_permiso,usuario_creacion, usuario_actualizacion) VALUES
+-- Jefe de Operaciones (id_rol = 2) permisos relacionados a cotizaciones, reservas, reportes
+(2, 1,'admin', 'admin'), (2, 2,'admin', 'admin'), (2, 3,'admin', 'admin'), (2, 8,'admin', 'admin'), (2, 9,'admin', 'admin');
+
+INSERT INTO roles_permisos (id_rol, id_permiso,usuario_creacion, usuario_actualizacion) VALUES
+-- Almacenero (id_rol = 3) permisos de inventario
+(3, 4,'admin', 'admin'), (3, 5,'admin', 'admin'),
+
+-- Vendedor (id_rol = 4) permisos de clientes, cotizaciones, facturación
+(4, 1,'admin', 'admin'), (4, 2,'admin', 'admin'), (4, 6,'admin', 'admin'), (4, 7,'admin', 'admin');
+
+
+
+-- Asignar el rol Administrador al usuario admin
+INSERT INTO usuario_roles (id_usuario, id_rol, usuario_creacion, usuario_actualizacion)
+VALUES (1, 1, 'admin', 'admin');
+
+-- Asignar el rol Supervisor a juan
+INSERT INTO usuario_roles (id_usuario, id_rol, usuario_creacion, usuario_actualizacion)
+VALUES (2, 2, 'admin', 'admin');
+
+-- Asignar 2 roles a un mismo usuario (admin es también supervisor)
+INSERT INTO usuario_roles (id_usuario, id_rol, usuario_creacion, usuario_actualizacion)
+VALUES (1, 2, 'admin', 'admin');
+
+
 
 
 INSERT INTO empleados (
@@ -626,19 +657,19 @@ INSERT INTO empleados (
     1, '18130283', 'Carlos Eduardo', 'Cárdenas Altuna', '1973-07-15',
     1, 2, '960144175', 'norcad.sg@gmail.com', 'cardenasa@leboulevard.ca.com',
     'Urb. Villa Santa Maria Mz LL - Lt 3', 3, 6, '2000-01-15', 3500.00,
-    1, NULL, 'admin', 'admin'
+    1, 1, 'admin', 'admin'
 ),
 (1, '03882099', 'Monica Soledad', 'Cordova Vilchez', '1973-05-01',
     2, 2, '977532253', 'monci.cv@gmail.com', 'monica.cv@leboulevard.ca.com',
     'Urb. Villa Santa Maria Mz LL - Lt 3', 2, 5, '2000-01-15', 3500.00,
-    1, NULL, 'admin', 'admin'
+    1, 2, 'admin', 'admin'
  ),   
 (1, '41528741', 'José', 'Ramírez Soto', '1985-08-21',
  1, 1, '987654321', 'jose@gmail.com', 'jose@leboulevard.ca.com',
  'Av. Las Flores 123', 1, 2, '2010-03-10', 1025.00,
- 1, NULL, 'admin', 'admin'
+ 1, 3, 'admin', 'admin'
  ),
-(1, '61287412', 'María Fernanda', 'Pérez Gómez', '1990-11-30',
+ (1, '61287412', 'María Fernanda', 'Pérez Gómez', '1990-11-30',
  2, 1, '912345678', 'maria.perez@gmail.com', 'mperez@leboulevard.ca.com',
  'Jr. Los Cedros 456', 1, 4, '2015-06-25', 1025.00,
  1, NULL, 'admin', 'admin'
@@ -654,60 +685,19 @@ INSERT INTO empleados (
  1, NULL, 'admin', 'admin'
  );
  
-INSERT INTO roles (nombre, descripcion, id_estado, usuario_creacion, usuario_actualizacion)
-VALUES 
-('Administrador', 'Control total del sistema y configuración general', 1, 'admin', 'admin'),
-('Jefe de Operaciones', 'Supervisa cotizaciones, proveedores y reportes', 1, 'admin', 'admin'),
-('Almacenero', 'Gestiona entregas, devoluciones y control de stock', 1, 'admin', 'admin'),
-('Vendedor', 'Atiende clientes, genera cotizaciones y registra alquileres', 1, 'admin', 'admin');
-
-INSERT INTO usuarios (username, email, password_hash, id_rol, id_estado, id_empleado, usuario_creacion, usuario_actualizacion)
-VALUES
-('admin', 'cardenasa@leboulevard.ca.com', SHA2('admin123', 256), 1, 1, 1, 'admin', 'admin'),
-('joperaciones', 'monci.cv@leboulevard.ca.com', SHA2('operaciones123', 256), 2, 1, 2, 'admin', 'admin'),
-('almacenero', 'almacen@leboulevard.ca.com', SHA2('almacen123', 256), 3, 1, 3, 'admin', 'admin');
 
 
-INSERT INTO permisos (nombre_permiso, descripcion, id_estado, usuario_creacion, usuario_actualizacion)
-VALUES
-('cotizaciones_crear', 'Permite crear nuevas cotizaciones', 1, 'admin', 'admin'),
-('cotizaciones_ver', 'Permite ver cotizaciones y sus detalles', 1, 'admin', 'admin'),
-('cotizaciones_exportar', 'Permite exportar cotizaciones a PDF o enviar por WhatsApp', 1, 'admin', 'admin'),
-('inventario_ver', 'Permite ver y listar productos', 1, 'admin', 'admin'),
-('inventario_editar', 'Permite agregar o editar productos y stock', 1, 'admin', 'admin'),
-('facturacion_crear', 'Permite emitir facturas', 1, 'admin', 'admin'),
-('clientes_crear', 'Permite registrar nuevos clientes', 1, 'admin', 'admin'),
-('reservas_gestionar', 'Permite aprobar o cancelar reservas', 1, 'admin', 'admin'),
-('dashboard_ver', 'Permite ver el dashboard con KPIs y gráficos', 1, 'admin', 'admin'),
-('administracion_usuarios', 'Permite gestionar usuarios, roles y contraseñas', 1, 'admin', 'admin'),
-('sincronizar_datos', 'Permite usar la función de sincronización de datos', 1, 'admin', 'admin'),
-('cerrar_sesion', 'Permite cerrar sesión del sistema', 1, 'admin', 'admin');
 
--- Asignar permisos a roles
-INSERT INTO roles_permisos (id_rol, id_permiso) VALUES
--- Administrador (id_rol = 1) tiene todos los permisos
-(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10), (1, 11), (1, 12),
 
--- Jefe de Operaciones (id_rol = 2) permisos relacionados a cotizaciones, reservas, reportes
-(2, 1), (2, 2), (2, 3), (2, 8), (2, 9),
 
--- Almacenero (id_rol = 3) permisos de inventario
-(3, 4), (3, 5),
 
--- Vendedor (id_rol = 4) permisos de clientes, cotizaciones, facturación
-(4, 1), (4, 2), (4, 6), (4, 7);
 
-INSERT INTO bitacora_actividad (
-    id_usuario,
-    fecha_ingreso,
-    fecha_salida,
-    duracion_minutos,
-    usuario_creacion,
-    usuario_actualizacion
-) VALUES
-(1, '2025-08-11 08:00:00', '2025-08-11 16:00:00', 480, 'admin', 'admin'),
-(2, '2025-08-11 09:00:00', '2025-08-11 14:00:00', 300, 'joperaciones', 'joperaciones'),
-(3, '2025-08-11 10:00:00', '2025-08-11 15:30:00', 330, 'almacenero', 'almacenero');
+
+
+
+
+
+
 
 INSERT INTO categorias_producto (
     codigo_categoria,
