@@ -1,35 +1,47 @@
+# -----------------------------------------------------
+# CONFIGURACIÓN DE LA BASE DE DATOS (MySQL)
+# -----------------------------------------------------
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/eventsys_lb?serverTimezone=America/Lima&allowPublicKeyRetrieval=true&useSSL=false
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    # URL de conexión a tu base de datos.
+    # IMPORTANTE: Incluye los parámetros para evitar errores de conexión con MySQL.
+    url: jdbc:mysql://localhost:3306/eventsys_lb?allowPublicKeyRetrieval=true&useSSL=false
+    # Usuario de tu base de datos (cámbialo si usas otro).
     username: root
-    password: 23422215
-    hikari:
-      maximum-pool-size: 10         # Numero maximo de conexiones en el pool
-      minimum-idle: 5               # Minimo de conexiones inactivas
-      idle-timeout: 600000          # Tiempo (ms) antes de cerrar una conexion inactiva
-      max-lifetime: 1800000         # Tiempo maximo de vida (ms) de una conexion
-      connection-timeout: 30000     # Tiempo de espera para obtener una conexion
+    # Contraseña de tu base de datos (cámbiala por la tuya).
+    password: admin
+    # Driver de MySQL.
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # -----------------------------------------------------
+  # CONFIGURACIÓN DE JPA / HIBERNATE
+  # -----------------------------------------------------
   jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    # Le dice a Hibernate qué dialecto de SQL usar para MySQL.
+    database-platform: org.hibernate.dialect.MySQLDialect
+    # Muestra en la consola las sentencias SQL que Hibernate ejecuta.
     show-sql: true
+    hibernate:
+      # Configuración de DDL (Data Definition Language).
+      # 'validate': Valida que el esquema de la BD coincida con las entidades. Falla si no coinciden.
+      # 'update': Intenta actualizar el esquema de la BD si hay diferencias. Útil en desarrollo.
+      # 'create-drop': Crea el esquema al iniciar y lo borra al detener. Útil para pruebas.
+      # 'none': No hace nada. Recomendado para producción.
+      ddl-auto: validate
     properties:
       hibernate:
-        jdbc:
-          batch_size: 20                 # Agrupa hasta 20 operaciones en lote (inserciones/actualizaciones)
-        order_inserts: true              # Ordena las inserciones para optimizar el rendimiento del batch
-        order_updates: true              # Ordena las actualizaciones para mejorar el uso del batch
+        # Formatea el SQL mostrado en la consola para que sea más legible.
+        format_sql: true
 
-
-logging:
-  level:
-    root: INFO
-    org.hibernate.orm.jdbc.bind: TRACE         # Muestra los valores que se envian a los parametros ?
-    org.hibernate.orm.jdbc.extract: TRACE    # Muestra los valores que se extraen desde la BD
-    org.hibernate.type.descriptor.sql: TRACE   # Para ver mas detalles de tipos
-
-
-
-
-
+# -----------------------------------------------------
+# CONFIGURACIÓN DE JWT (JSON Web Tokens)
+# -----------------------------------------------------
+jwt:
+  # Clave secreta para firmar los tokens. DEBE ser larga y segura.
+  # Puedes generar una online (ej. en https://www.allkeysgenerator.com/Random/Security-Encryption-Key-Generator.aspx)
+  secret: MI_CLAVE_SECRETA_SUPER_LARGA_Y_SEGURA_PARA_PROYECTO_EVENTSYS_2025
+  # Duración del token de acceso (ej. 1 hora en milisegundos).
+  expiration: 3600000
+  # Duración del token de refresco (ej. 7 días en milisegundos).
+  refresh-expiration: 604800000
 

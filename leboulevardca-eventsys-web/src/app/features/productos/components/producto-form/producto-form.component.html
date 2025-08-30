@@ -1,0 +1,61 @@
+<div class="flex justify-center mt-10">
+  <div class="bg-white shadow-md rounded-lg p-6 w-full max-w-lg">
+    <!-- 👇 Cambia el título según si hay productoId -->
+    <h2 class="text-2xl font-bold text-blue-600 mb-6 text-center">
+      {{ productoId ? 'Editar Producto' : 'Registrar Producto' }}
+    </h2>
+
+    <form [formGroup]="productoForm" (ngSubmit)="guardar()" class="space-y-4">
+      <!-- Nombre -->
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Nombre</label>
+        <input formControlName="nombre" type="text"
+               class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"/>
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Descripción</label>
+        <textarea formControlName="descripcion"
+                  class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"></textarea>
+      </div>
+
+      <!-- Precio -->
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Precio Unitario</label>
+        <input formControlName="precioUnitario" type="number"
+               class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"/>
+      </div>
+
+      <!-- Stock -->
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Stock Actual</label>
+        <input formControlName="stockActual" type="number"
+               class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400"/>
+      </div>
+
+      <!-- Categoría -->
+      <div>
+        <label class="block text-gray-700 font-medium mb-1">Categoría</label>
+        <select formControlName="categoriaId"
+                class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-blue-400">
+          <option [ngValue]="null" disabled>Selecciona una categoría</option>
+          <option *ngFor="let c of categorias" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-between mt-6">
+        <!-- 👇 Cambia el texto según modo -->
+        <button type="submit"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+          {{ productoId ? 'Actualizar' : 'Guardar' }}
+        </button>
+        <button type="button" (click)="cancelar()"
+                class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

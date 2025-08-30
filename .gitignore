@@ -1,0 +1,15 @@
+# Node.js / Angular
+node_modules/
+dist/
+
+# IntelliJ / VSCode
+.idea/
+.vscode/
+
+# Java / Spring Boot
+target/
+*.iml
+
+# Otros
+.DS_Store
+Thumbs.db

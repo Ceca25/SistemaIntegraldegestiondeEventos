@@ -1,31 +1,27 @@
 package pe.leboulevard.demo.domain.empleados.model;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 public class EmpleadosModel {
-
-    private long id_empleado;
+    private Integer idEmpleado;
+    private String numeroDocumento;
     private String nombres;
     private String apellidos;
-    private String documento_identidad;
-    private String tipo_documento;
-    private LocalDate fecha_nacimiento;
-    private String genero;
-    private String estado_civil;
-    private String telefono;
-    private String email_personal;
-    private String email_corporativo;
-    private String direccion;
-    private LocalDate fecha_ingreso;
-    private LocalDate fecha_salida;
-    private String estado;
-    private String id_cargo;
-    private String id_departamento;
-    //Campos de auditoria
-    private LocalDate fecha_creacion;
-    private String usuario_creacion;
-    private LocalDate fecha_actualizacion;
-    private String usuario_actualizacion;
+    private LocalDate fechaIngreso;
+    private Integer idGenero;
+    private Integer idEstadoCivil;
+
+    private BigDecimal salario; // <-- SE CAMBIÓ Double POR BigDecimal
+
+    private LocalDateTime fechaCreacion;
+    private String usuarioCreacion;
+    private LocalDateTime fechaActualizacion;
+    private String usuarioActualizacion;
 }

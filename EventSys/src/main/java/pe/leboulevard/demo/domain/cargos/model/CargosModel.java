@@ -1,22 +1,22 @@
 package pe.leboulevard.demo.domain.cargos.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+import pe.leboulevard.demo.domain.departamentos.model.DepartamentosModel;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-
-@Data
-
+@Getter
+@Setter
 public class CargosModel {
-
-    private Long id_cargo;
+    private Integer idCargo;
     private String nombre;
     private String descripcion;
+    private DepartamentosModel departamento;
     private Boolean activo;
-    private Long id_departamento;
-    //Campos dde auditoria
-    private LocalDate fecha_creacion;
-    private String usuario_creacion;
-    private LocalDate fecha_actualizacion;
-    private String usuario_actualizacion;
+    // --- CAMPOS AÑADIDOS (Opción 2) ---
+    private LocalDateTime fechaCreacion;
+    private String usuarioCreacion;
+    private LocalDateTime fechaActualizacion;
+    private String usuarioActualizacion;
 }

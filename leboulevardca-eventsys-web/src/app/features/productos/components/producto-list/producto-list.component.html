@@ -1,0 +1,77 @@
+<div class="p-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 bg-blue-600 p-4 rounded-lg shadow">
+        <h1 class="text-white text-2xl font-bold flex items-center gap-2">
+            📦 Gestión de Productos
+        </h1>
+        <!-- Botón corregido -->
+        <button
+                [routerLink]="['/productos/nuevo']"
+                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+            + Nuevo Producto
+        </button>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-white shadow rounded-lg p-4">
+        <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            📋 Listado de Productos
+        </h2>
+
+        <table class="min-w-full border-collapse border border-gray-200">
+            <thead>
+            <tr class="bg-gray-100 text-left">
+                <th class="px-4 py-2 border">ID</th>
+                <th class="px-4 py-2 border">Nombre</th>
+                <th class="px-4 py-2 border">Descripción</th>
+                <th class="px-4 py-2 border">Precio</th>
+                <th class="px-4 py-2 border">Stock</th>
+                <!-- ✅ Nueva columna -->
+                <th class="px-4 py-2 border">Categoría</th>
+                <th class="px-4 py-2 border w-40 text-center">Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+                @for (p of productos; track p.id) {
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2 border">{{ p.id }}</td>
+                        <td class="px-4 py-2 border">{{ p.nombre }}</td>
+                        <td class="px-4 py-2 border">{{ p.descripcion }}</td>
+                        <td class="px-4 py-2 border text-green-600 font-semibold">
+                            {{ p.precioUnitario }}
+                        </td>
+                        <td class="px-4 py-2 border">{{ p.stockActual }}</td>
+                        <!-- ✅ Mostrar nombre de categoría -->
+
+                      <td class="px-4 py-2 border">{{ p.categoria.nombre }}</td>
+
+                      <td class="px-4 py-2 border text-center">
+                            <div class="flex justify-center gap-2">
+                                <button
+                                        [routerLink]="['/productos/editar', p.id]"
+                                        class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition">
+                                    Editar
+                                </button>
+
+                                <button
+                                        class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                                        (click)="eliminarProducto(p.id!)">
+                                    Eliminar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Sin productos -->
+        @if (!cargando && productos.length === 0) {
+            <div class="text-gray-500 text-center mt-4">
+                No hay productos disponibles
+            </div>
+        }
+    </div>
+</div>
+
+
