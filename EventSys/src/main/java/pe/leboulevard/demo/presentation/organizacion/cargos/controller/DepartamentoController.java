@@ -1,4 +1,4 @@
-package pe.leboulevard.demo.presentation.cargos.controller;
+package pe.leboulevard.demo.presentation.organizacion.cargos.controller;
 
 public class DepartamentoController {
 }

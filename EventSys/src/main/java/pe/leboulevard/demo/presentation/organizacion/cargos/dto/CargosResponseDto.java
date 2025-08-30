@@ -1,4 +1,4 @@
-package pe.leboulevard.demo.presentation.cargos.dto;
+package pe.leboulevard.demo.presentation.organizacion.cargos.dto;
 
 public record CargosResponseDto(
         Long id_cargo,

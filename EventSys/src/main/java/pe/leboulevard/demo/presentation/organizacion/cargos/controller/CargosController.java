@@ -1,4 +1,4 @@
-package pe.leboulevard.demo.presentation.cargos.controller;
+package pe.leboulevard.demo.presentation.organizacion.cargos.controller;
 
 
 import lombok.RequiredArgsConstructor;
@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pe.leboulevard.demo.domain.organizacion.cargos.service.CargosService;
-import pe.leboulevard.demo.presentation.cargos.dto.CargosResponseDto;
-import pe.leboulevard.demo.presentation.cargos.mapper.CargosDtoMapper;
+import pe.leboulevard.demo.presentation.organizacion.cargos.dto.CargosResponseDto;
+import pe.leboulevard.demo.presentation.organizacion.cargos.mapper.CargosDtoMapper;
 
 import java.util.List;
 

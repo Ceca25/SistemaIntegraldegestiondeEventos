@@ -68,12 +68,12 @@ CREATE TABLE cargos (
     id_cargo INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL UNIQUE,
     descripcion TEXT,
-         -- Campos de auditoria
+    id_departamento INT NOT NULL,
+    -- Campos de auditoria
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usuario_creacion VARCHAR(50) NOT NULL,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     usuario_actualizacion VARCHAR(50) NOT NULL,
-    id_departamento INT NOT NULL,
     FOREIGN KEY (id_departamento) REFERENCES departamentos(id_departamento) ON DELETE CASCADE
 );
 
@@ -189,15 +189,6 @@ CREATE TABLE empleados (
     FOREIGN KEY (id_estado_civil) REFERENCES estado_civil(id_estado_civil) ON DELETE RESTRICT
 );
 
-
-
-
-
-
-
-
-
-
 -- Tabla de Categoria_productos
 CREATE TABLE categorias_producto (
    id_categoria INT AUTO_INCREMENT PRIMARY KEY,
@@ -209,7 +200,6 @@ CREATE TABLE categorias_producto (
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     usuario_actualizacion VARCHAR(50) NOT NULL
 );
-
 
 
 CREATE TABLE subcategorias_producto (
@@ -227,7 +217,6 @@ CREATE TABLE subcategorias_producto (
 );
 
 -- Tabla de productos
-
 
 CREATE TABLE productos (
     id_producto INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -399,9 +388,6 @@ CREATE TABLE precios_alquiler (
     usuario_actualizacion VARCHAR(50) NOT NULL,
     FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
 );
-
-
-
 
 -- Tabla de contrato
 CREATE TABLE contratos (
@@ -686,18 +672,9 @@ INSERT INTO empleados (
  );
  
 
-
-
-
-
-
-
-
-
-
-
-
-
+--
+--
+--
 
 INSERT INTO categorias_producto (
     codigo_categoria,
